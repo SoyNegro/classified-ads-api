@@ -52,13 +52,14 @@ fun Application.module(testing: Boolean = false) {
         basic("public-api") {
             realm = "Access to /api"
             validate { credential ->
-                if (DB.credentialCollection.findOne(
-                        and(
-                            AccessCredential::apiKey eq credential.name,
-                            AccessCredential::password eq credential.password
-                        )
-                    ) != null
-                ) UserIdPrincipal(credential.name) else null
+                val accessCredential = DB.credentialCollection.findOne(
+                    and(
+                        AccessCredential::apiKey eq credential.name,
+                        AccessCredential::password eq credential.password
+                    ))
+                if (
+                     accessCredential != null
+                ) UserIdPrincipal(accessCredential.owningUser) else null
             }
         }
     }
