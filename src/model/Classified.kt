@@ -1,5 +1,6 @@
 package com.thedarksideofcode.model
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
 import java.time.LocalDateTime
@@ -22,5 +23,6 @@ data class Classified(
     val publisherName: String,
     val publisherEmail: String,
     val publisherPhone: String?,
-    val owningUser: String, // Attribute unique enough to distinguish this classified domain, shall not be their id
+    @JsonIgnore
+    var owningUser: String?, // Attribute unique enough to distinguish this classified domain, shall not be their id
 )
