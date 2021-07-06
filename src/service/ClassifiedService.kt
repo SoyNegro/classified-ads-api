@@ -5,6 +5,7 @@ import com.thedarksideofcode.model.Classified
 import com.thedarksideofcode.paginator.PageRequest
 import com.thedarksideofcode.paginator.Paginator
 import org.bson.conversions.Bson
+import org.litote.kmongo.and
 import org.litote.kmongo.descending
 import org.litote.kmongo.eq
 import java.time.LocalDateTime
@@ -19,37 +20,39 @@ class ClassifiedService {
         DB.classifiedsCollection.updateOneById(classified.id, classified)
     }
 
-    suspend fun deleteById(id: String) {
-        DB.classifiedsCollection.deleteOneById(id)
+    suspend fun deleteById(id: String, owningUSer:String) {
+        DB.classifiedsCollection.deleteOne(and(Classified::id eq id, Classified::owningUser eq owningUSer))
     }
 
     //Get Area
-    suspend fun getClassifiedById(id: String): Classified? {
-        return DB.classifiedsCollection.findOneById(id)
+    suspend fun getClassifiedById(id: String, owningUSer: String): Classified? {
+        return DB.classifiedsCollection.findOne(and(Classified::id eq id, Classified::owningUser eq owningUSer))
     }
 
     suspend fun getClassifiedBySubCategory(
         subcategory: String,
+        owningUSer:String,
         page: Int = 0,
         size: Int = 100
     ): Paginator<Classified>? {
-        return paginate(page, size, Classified::subcategory eq subcategory, descending(Classified::publishedDate))
+        return paginate(page, size, and(Classified::subcategory eq subcategory, Classified::owningUser eq owningUSer), descending(Classified::publishedDate))
     }
 
-    suspend fun getClassifiedByState(state: String, page: Int = 0, size: Int = 100): Paginator<Classified>? {
-        return paginate(page, size, Classified::state eq state, descending(Classified::publishedDate))
+    suspend fun getClassifiedByState(state: String, owningUSer:String, page: Int = 0, size: Int = 100): Paginator<Classified>? {
+        return paginate(page, size, and(Classified::state eq state, Classified::owningUser eq owningUSer), descending(Classified::publishedDate))
     }
 
-    suspend fun getClassifiedByCity(city: String, page: Int = 0, size: Int = 100): Paginator<Classified>? {
-        return paginate(page, size, Classified::city eq city, descending(Classified::publishedDate))
+    suspend fun getClassifiedByCity(city: String, owningUSer:String, page: Int = 0, size: Int = 100): Paginator<Classified>? {
+        return paginate(page, size, and(Classified::city eq city, Classified::owningUser eq owningUSer), descending(Classified::publishedDate))
     }
 
     suspend fun getClassifiedByPublishedDate(
         publishedDate: LocalDateTime,
+        owningUSer:String,
         page: Int = 0,
         size: Int = 100
     ): Paginator<Classified>? {
-        return paginate(page, size, Classified::publishedDate eq publishedDate, descending(Classified::publishedDate))
+        return paginate(page, size, and(Classified::publishedDate eq publishedDate, Classified::owningUser eq owningUSer), descending(Classified::publishedDate))
     }
 
     private suspend fun paginate(page: Int, size: Int, filter: Bson, sort: Bson): Paginator<Classified>? {
@@ -67,7 +70,7 @@ class ClassifiedService {
 
     }
 
-    fun validateSize(size: Int?): Int {
+    fun validatePaginationParams(size: Int?): Int {
         return when {
             size == null|| size < 0 -> 0
             size > 100 -> 100
